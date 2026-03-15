@@ -1,0 +1,17 @@
+ru/studentbot/service/MessageFactory$Button.class
+ru/studentbot/repo/RegistrationRepository.class
+ru/studentbot/StudentBotApplication.class
+ru/studentbot/repo/EventRepository.class
+ru/studentbot/repo/StateRepository.class
+ru/studentbot/service/BotService.class
+ru/studentbot/config/BotProperties.class
+ru/studentbot/service/LongPollingRunner.class
+ru/studentbot/service/BotService$EventInput.class
+ru/studentbot/service/DatabaseInitializer.class
+ru/studentbot/model/Category.class
+ru/studentbot/web/HealthController.class
+ru/studentbot/config/BotProperties$LongPolling.class
+ru/studentbot/model/Event.class
+ru/studentbot/model/UserState.class
+ru/studentbot/service/MessageFactory.class
+ru/studentbot/service/MaxApiClient.class

@@ -1,0 +1,14 @@
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/StudentBotApplication.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/config/BotProperties.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/model/Category.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/model/Event.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/model/UserState.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/repo/EventRepository.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/repo/RegistrationRepository.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/repo/StateRepository.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/service/BotService.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/service/DatabaseInitializer.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/service/LongPollingRunner.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/service/MaxApiClient.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/service/MessageFactory.java
+/Users/dmitry/Desktop/studentBot/src/main/java/ru/studentbot/web/HealthController.java
