@@ -1,6 +1,6 @@
+# Этот файл отвечает за конфигурацию приложения и переменные окружения.
 server:
   port: 8080
-
 bot:
   token: ${MAX_BOT_TOKEN:}
   api-base: ${MAX_API_BASE:https://platform-api.max.ru}
@@ -9,7 +9,6 @@ bot:
     timeout: ${MAX_LONG_POLLING_TIMEOUT:30}
     limit: ${MAX_LONG_POLLING_LIMIT:100}
     types: ${MAX_LONG_POLLING_TYPES:message_created,message_callback}
-
 spring:
   datasource:
     url: jdbc:sqlite:${DB_PATH:/data/bot.db}

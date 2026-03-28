@@ -1,22 +1,30 @@
+// Этот файл отвечает за создание таблиц и заполнение базовых данных.
 package ru.studentbot.service;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.studentbot.model.Category;
 import ru.studentbot.repo.EventRepository;
-
 import jakarta.annotation.PostConstruct;
-
+/*
+ * Инициализатор базы данных.
+ * Создает таблицы и добавляет стартовые мероприятия.
+ */
 @Component
 public class DatabaseInitializer {
     private final JdbcTemplate jdbcTemplate;
     private final EventRepository eventRepository;
-
+    /*
+     * Конструктор инициализатора.
+     * Получает доступ к JDBC и репозиторию событий.
+     */
     public DatabaseInitializer(JdbcTemplate jdbcTemplate, EventRepository eventRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.eventRepository = eventRepository;
     }
-
+    /*
+     * Создает таблицы, если их еще нет.
+     * При пустой базе добавляет стандартные мероприятия.
+     */
     @PostConstruct
     public void init() {
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS events (" +
@@ -27,7 +35,6 @@ public class DatabaseInitializer {
                 "is_active INTEGER NOT NULL DEFAULT 1," +
                 "updated_at INTEGER NOT NULL" +
                 ")");
-
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS registrations (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "event_id INTEGER NOT NULL," +
@@ -35,7 +42,6 @@ public class DatabaseInitializer {
                 "full_text TEXT NOT NULL," +
                 "created_at INTEGER NOT NULL" +
                 ")");
-
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS user_state (" +
                 "user_id INTEGER PRIMARY KEY," +
                 "state TEXT NOT NULL," +
@@ -43,12 +49,14 @@ public class DatabaseInitializer {
                 "is_admin INTEGER NOT NULL DEFAULT 0," +
                 "updated_at INTEGER NOT NULL" +
                 ")");
-
         if (eventRepository.countAll() == 0) {
             seedDefaults();
         }
     }
-
+    /*
+     * Заполняет базу стартовыми мероприятиями.
+     * Используется только при первом запуске.
+     */
     private void seedDefaults() {
         String cultural = "🎭 Вечер школьного театра «Живые страницы»\n\n" +
                 "🗓 Дата: 22 апреля\n" +
@@ -57,7 +65,6 @@ public class DatabaseInitializer {
                 "В программе — мини-спектакли, сценические этюды и чтение отрывков " +
                 "из любимых книг. Подойдёт тем, кто любит литературу, сцену и дружескую атмосферу.\n\n" +
                 "Возьми хорошее настроение и пригласи друзей.";
-
         String entertainment = "🎉 Школьный квиз «Умники и Умницы»\n\n" +
                 "🗓 Дата: 19 апреля\n" +
                 "🕒 Время: 15:10\n" +
@@ -65,7 +72,6 @@ public class DatabaseInitializer {
                 "Командная игра на логику, внимание и общую эрудицию. " +
                 "Будут вопросы про кино, музыку, науку и школьные лайфхаки.\n\n" +
                 "Собирайте команду 4–6 человек и приходите за яркими эмоциями.";
-
         String sports = "🏆 Турнир по волейболу «Кубок школы»\n\n" +
                 "🗓 Дата: 27 апреля\n" +
                 "🕒 Время: 15:40\n" +
@@ -73,7 +79,6 @@ public class DatabaseInitializer {
                 "Игры в формате коротких сетов, поддержка болельщиков и дружеский дух. " +
                 "Подойдёт всем, кто любит активность и командную игру.\n\n" +
                 "Форма — спортивная, обувь — сменная.";
-
         eventRepository.insert(Category.CULTURAL, "Вечер школьного театра «Живые страницы»", cultural);
         eventRepository.insert(Category.ENTERTAINMENT, "Квиз «Умники и Умницы»", entertainment);
         eventRepository.insert(Category.SPORTS, "Турнир по волейболу «Кубок школы»", sports);
