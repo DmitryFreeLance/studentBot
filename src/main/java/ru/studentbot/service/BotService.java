@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.studentbot.model.Category;
 import ru.studentbot.model.Event;
+import ru.studentbot.model.RegistrationInfo;
 import ru.studentbot.model.UserState;
 import ru.studentbot.repo.EventRepository;
 import ru.studentbot.repo.RegistrationRepository;
@@ -16,8 +17,10 @@ import ru.studentbot.repo.StateRepository;
 import ru.studentbot.service.MessageFactory.Button;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 /*
  * Основная логика бота.
  * Обрабатывает апдейты, управляет состояниями и админ-панелью.
@@ -30,6 +33,7 @@ public class BotService {
     private static final String STATE_WAITING_SIGNUP = "WAITING_SIGNUP";
     private static final String STATE_ADMIN_WAITING_ADD = "ADMIN_WAITING_ADD";
     private static final String STATE_ADMIN_WAITING_EDIT = "ADMIN_WAITING_EDIT";
+    private static final int ADMIN_TEXT_LIMIT = 3500;
     private final ObjectMapper objectMapper;
     private final MaxApiClient apiClient;
     private final MessageFactory messageFactory;
@@ -154,6 +158,10 @@ public class BotService {
                 stateRepository.save(userId, STATE_IDLE, null, true);
                 yield adminAddMenuMessage();
             }
+            case "admin:registrations" -> {
+                stateRepository.save(userId, STATE_IDLE, null, true);
+                yield adminRegistrationsMenuMessage();
+            }
             default -> handleCallbackPayload(payload, userId, isAdmin);
         };
         if (response != null) {
@@ -224,6 +232,13 @@ public class BotService {
                 }
             }
             return adminMenuMessage();
+        }
+        if (payload.startsWith("admin:reg_cat:")) {
+            Category category = Category.fromPayload(payload.substring("admin:reg_cat:".length()));
+            if (category == null) {
+                return adminRegistrationsMenuMessage();
+            }
+            return adminRegistrationsMessage(category);
         }
         return null;
     }
@@ -415,9 +430,69 @@ public class BotService {
             String label = event.getTitle() + " (" + event.getCategory().getDisplayName() + ")";
             buttons.add(List.of(new Button(label, "admin:event:" + event.getId())));
         }
+        buttons.add(List.of(new Button("Заявки", "admin:registrations")));
         buttons.add(List.of(new Button("Добавить", "admin:add_menu")));
         buttons.add(List.of(new Button("Выйти", "admin:exit")));
         return messageFactory.textWithButtons(text, buttons);
+    }
+    /*
+     * Меню выбора направления для просмотра заявок.
+     */
+    private ObjectNode adminRegistrationsMenuMessage() {
+        String text = "Выберите направление, чтобы посмотреть всех записавшихся.";
+        List<List<Button>> buttons = new ArrayList<>();
+        buttons.add(List.of(new Button("Культурные", "admin:reg_cat:CULTURAL"),
+                new Button("Развлекательные", "admin:reg_cat:ENTERTAINMENT")));
+        buttons.add(List.of(new Button("Спортивные", "admin:reg_cat:SPORTS")));
+        buttons.add(List.of(new Button("Назад", "admin:menu")));
+        return messageFactory.textWithButtons(text, buttons);
+    }
+    /*
+     * Показывает список записавшихся по выбранному направлению.
+     */
+    private ObjectNode adminRegistrationsMessage(Category category) {
+        List<RegistrationInfo> registrations = registrationRepository.findByCategory(category);
+        StringBuilder text = new StringBuilder();
+        text.append(category.getEmoji()).append(" ").append(category.getDisplayName()).append("\n");
+        if (registrations.isEmpty()) {
+            text.append("\nПока нет записавшихся.");
+            return messageFactory.textWithButtons(
+                    text.toString(),
+                    List.of(List.of(new Button("Назад", "admin:registrations")))
+            );
+        }
+        Map<Long, List<RegistrationInfo>> byEvent = new LinkedHashMap<>();
+        for (RegistrationInfo info : registrations) {
+            byEvent.computeIfAbsent(info.eventId(), key -> new ArrayList<>()).add(info);
+        }
+        int shown = 0;
+        for (List<RegistrationInfo> eventRegs : byEvent.values()) {
+            if (eventRegs.isEmpty()) {
+                continue;
+            }
+            String title = Objects.requireNonNullElse(eventRegs.get(0).eventTitle(), "Мероприятие");
+            text.append("\n").append(title).append("\n");
+            int idx = 1;
+            for (RegistrationInfo info : eventRegs) {
+                String line = idx + ". " + info.fullText() + " (id: " + info.userId() + ")\n";
+                if (text.length() + line.length() > ADMIN_TEXT_LIMIT) {
+                    text.append("\nПоказаны первые ").append(shown)
+                            .append(" из ").append(registrations.size()).append(".");
+                    return messageFactory.textWithButtons(
+                            text.toString(),
+                            List.of(List.of(new Button("Назад", "admin:registrations")))
+                    );
+                }
+                text.append(line);
+                shown++;
+                idx++;
+            }
+        }
+        text.append("\nВсего записей: ").append(registrations.size());
+        return messageFactory.textWithButtons(
+                text.toString(),
+                List.of(List.of(new Button("Назад", "admin:registrations")))
+        );
     }
     /*
      * Предлагает выбрать категорию для добавления.
